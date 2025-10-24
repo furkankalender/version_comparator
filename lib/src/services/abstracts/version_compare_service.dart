@@ -11,7 +11,8 @@ abstract class VersionCompareService with PackageInfoMixin, LaunchUrlMixin {
   BaseStoreModel get store;
   RemoteDataService get dataService;
 
-  Future<DataResult<VersionResponseModel>> getVersion({Map<String, String>? customHeader});
+  Future<DataResult<VersionResponseModel>> getVersion(
+      {Map<String, String>? customHeader});
 }
 
 abstract class VersionCompareByQueryService extends VersionCompareService {
@@ -104,7 +105,8 @@ abstract class VersionCompareByQueryService extends VersionCompareService {
       data: VersionResponseModel(
         localVersion: localVersion,
         storeVersion: version,
-        updateLink: customUpdateLink?.call(response.data!) ?? parameter.getUrl(),
+        updateLink:
+            customUpdateLink?.call(response.data!) ?? parameter.getUrl(),
       ),
     );
   }
@@ -119,5 +121,4 @@ String? _customExtractVersion(String text) {
       return null;
     }
   }
-
 }
