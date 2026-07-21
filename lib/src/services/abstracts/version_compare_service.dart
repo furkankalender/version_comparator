@@ -11,7 +11,8 @@ abstract class VersionCompareService with PackageInfoMixin, LaunchUrlMixin {
   BaseStoreModel get store;
   RemoteDataService get dataService;
 
-  Future<DataResult<VersionResponseModel>> getVersion({Map<String, String>? customHeader});
+  Future<DataResult<VersionResponseModel>> getVersion(
+      {Map<String, String>? customHeader});
 }
 
 abstract class VersionCompareByQueryService extends VersionCompareService {
@@ -82,7 +83,18 @@ abstract class VersionCompareByQueryService extends VersionCompareService {
 
     // If the version is null or empty, return a DataResult with an error message.
     if (version == null || version.isEmpty) {
-      return DataResult.error(message: kErrorMessage.versionResponseNull);
+      final data = _customExtractVersion(response.data!);
+      if (data == null) {
+        return DataResult.error(message: kErrorMessage.versionResponseNull);
+      }
+      return DataResult.success(
+        data: VersionResponseModel(
+          localVersion: localVersion,
+          storeVersion: data,
+          updateLink:
+              customUpdateLink?.call(response.data!) ?? parameter.getUrl(),
+        ),
+      );
     }
 
     // Create a VersionResponseModel object with the following parameters:
@@ -93,8 +105,20 @@ abstract class VersionCompareByQueryService extends VersionCompareService {
       data: VersionResponseModel(
         localVersion: localVersion,
         storeVersion: version,
-        updateLink: customUpdateLink?.call(response.data!) ?? parameter.getUrl(),
+        updateLink:
+            customUpdateLink?.call(response.data!) ?? parameter.getUrl(),
       ),
     );
+  }
+
+String? _customExtractVersion(String text) {
+    final pattern = RegExp(r'"141":\[\[\["([\d\.]+)"\]');
+    final match = pattern.firstMatch(text);
+
+    if (match != null) {
+      return match.group(1);
+    } else {
+      return null;
+    }
   }
 }
